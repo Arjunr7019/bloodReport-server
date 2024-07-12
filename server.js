@@ -157,9 +157,9 @@ app.post("/api/test", (req, res)=>{
             }]
         }
     }
-    if(req.body.parameterType === "ESR"){
+    if(req.body.parametersType === "ESR"){
         res.json(ESR)
-    }else if(req.body.parameterType === "CRP"){
+    }else if(req.body.parametersType === "CRP"){
         res.json(CRP)
     }
 })
