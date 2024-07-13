@@ -92,7 +92,7 @@ app.post("/api/register", async (req, res) => {
         }
     }
     try{
-        if(req.body.parameterType === "ESR"){
+        if(req.body.parametersType === "ESR"){
             const ESRuser = await Users.create(ESR);
             res.status(201).json({
                 status: "Success",
@@ -100,7 +100,7 @@ app.post("/api/register", async (req, res) => {
                     ESRuser
                 }
             })
-        }else if(req.body.parameterType === "CRP"){
+        }else if(req.body.parametersType === "CRP"){
             const CRPuser = await Users.create(CRP);
             res.status(201).json({
                 status: "Success",
