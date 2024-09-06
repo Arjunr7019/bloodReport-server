@@ -192,11 +192,24 @@ app.post("/api/addNewParamaeter", async (req, res) => {
     }
 })
 
+app.post("/api/LoggedInUserData", async (req, res) => {
+    const user = await Users.findOne({ email: req.body.email }).exec();
+
+    if (user) {
+        res.json(user)
+    } else {
+        res.status(404).json({
+            status: "fail",
+            data: req.body
+        })
+    }
+})
+
 app.post("/api/test", async (req, res) => {
     const user = await Users.findOne({ email: req.body.email }).exec();
 
     if (user) {
-        res.json(user.parameters)
+        res.json(user)
     } else {
         res.status(404).json({
             status: "fail",
