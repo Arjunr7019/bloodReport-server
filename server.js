@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const dotenv = require('dotenv');
-dotenv.config({path: './config.env'});
+dotenv.config({ path: './config.env' });
 const jsonErrors = require('express-json-errors');
 const cors = require('cors');
 const nodemailer = require("nodemailer");
@@ -14,33 +14,33 @@ app.use(cors())
 
 mongoose.connect(process.env.CON_STR, {
     useNewUrlParser: true
-}).then((conn)=>{
+}).then((conn) => {
     // console.log(conn);
     console.log("DB connected successful");
-}).catch((error)=>{
+}).catch((error) => {
     console.log(error);
 })
 
 const transporter = nodemailer.createTransport({
-    service:"gmail",
+    service: "gmail",
     host: "smtp.gmail.com",
     port: 587,
     secure: false, // Use `true` for port 465, `false` for all other ports
     auth: {
-      user: process.env.USER,
-      pass: process.env.APP_PASS
+        user: process.env.USER,
+        pass: process.env.APP_PASS
     },
-  });
+});
 
-app.get("/api", (req, res)=>{
+app.get("/api", (req, res) => {
     res.json("working");
 })
 
-app.post("/api/mail", async (req, res)=>{
+app.post("/api/mail", async (req, res) => {
     const info = await transporter.sendMail({
         from: {
-            name:"BLOOD REPORT",
-            address:process.env.USER
+            name: "BLOOD REPORT",
+            address: process.env.USER
         },
         to: req.body.email, // list of receivers
         subject: "Password Reset OTP for Your Account", // Subject line
@@ -60,6 +60,24 @@ app.post("/api/mail", async (req, res)=>{
     res.json(info.messageId);
 })
 
+app.post("/api/login", async (req, res) => {
+    const user = await Users.findOne({ email:req.body.email, password:req.body.password }).exec();
+    
+    if(user){
+        res.status(200).json({
+            status: "Success",
+            data: {
+                user
+            }
+        })
+    }else{
+        res.status(404).json({
+            status: "fail",
+            data: req.body
+        })
+    }
+})
+
 app.post("/api/register", async (req, res) => {
     const ESR = {
         "name": req.body.name,
@@ -69,10 +87,16 @@ app.post("/api/register", async (req, res) => {
         "gender": req.body.gender,
         "joinedDate": req.body.joinedDate,
         "lastUpdateDate": req.body.joinedDate,
-        "parameters":{
-            "ESR":[{
+        "otpToken": "0",
+        "parameters": {
+            "date": new Date(),
+            "ESR": [{
                 "value": req.body.parameterValue,
                 "date": req.body.bloodParameterDate
+            }],
+            "CRP": [{
+                "value": "0",
+                "date": "0"
             }]
         }
     }
@@ -84,15 +108,21 @@ app.post("/api/register", async (req, res) => {
         "gender": req.body.gender,
         "joinedDate": req.body.joinedDate,
         "lastUpdateDate": req.body.joinedDate,
-        "parameters":{
-            "CRP":[{
+        "otpToken": "0",
+        "parameters": {
+            "date": new Date(),
+            "CRP": [{
                 "value": req.body.parameterValue,
                 "date": req.body.bloodParameterDate
+            }],
+            "ESR": [{
+                "value": "0",
+                "date": "0"
             }]
         }
     }
-    try{
-        if(req.body.parametersType === "ESR"){
+    try {
+        if (req.body.parametersType === "ESR") {
             const ESRuser = await Users.create(ESR);
             res.status(201).json({
                 status: "Success",
@@ -100,7 +130,7 @@ app.post("/api/register", async (req, res) => {
                     ESRuser
                 }
             })
-        }else if(req.body.parametersType === "CRP"){
+        } else if (req.body.parametersType === "CRP") {
             const CRPuser = await Users.create(CRP);
             res.status(201).json({
                 status: "Success",
@@ -110,14 +140,14 @@ app.post("/api/register", async (req, res) => {
             })
         }
         // const user = await Users.create(ESR);
-    
+
         // res.status(201).json({
         //     status: "Success",
         //     data: {
         //         user
         //     }
         // })
-    }catch(err){
+    } catch (err) {
         res.status(409).json({
             status: "fail",
             message: err.message
@@ -126,43 +156,54 @@ app.post("/api/register", async (req, res) => {
 
 })
 
-app.post("/api/test", (req, res)=>{
-    const ESR = {
-        "name": req.body.name,
-        "email": req.body.email,
-        "password": req.body.password,
-        "DOB": req.body.DOB,
-        "gender": req.body.gender,
-        "joinedDate": req.body.joinedDate,
-        "lastUpdateDate": req.body.joinedDate,
-        "parameters":{
-            "ESR":[{
-                "value": req.body.parameterValue,
-                "date": req.body.bloodParameterDate
-            }]
+app.post("/api/addNewParamaeter", async (req, res) => {
+    const user = await Users.findOne({ email: req.body.email }).exec();
+    const newParameterValue = [
+        {
+            "value": req.body.parameterValue,
+            "date": req.body.bloodParameterDate
+        }]
+    const mergeESR = [...newParameterValue, ...user.parameters.ESR]
+    const mergeCRP = [...newParameterValue, ...user.parameters.CRP]
+
+    const today = new Date();
+    const hours = today.getHours();
+    const minutes = today.getMinutes();
+    const seconds = today.getSeconds();
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const currentDate = `${dayNames[today.getDay()]}, ${monthNames[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+    const currentTime = `${hours}:${minutes}:${seconds}`;
+    const userLastUpdate = currentDate + " " + currentTime;
+
+    if (user) {
+        if (req.body.parametersType === "ESR") {
+            const updatedESRUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { ESR: mergeESR } } }, { new: true, runValidators: true })
+            res.json(updatedESRUser)
+        } else if (req.body.parametersType === "CRP") {
+            const updatedCRPUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { CRP: mergeCRP } } }, { new: true, runValidators: true })
+            res.json(updatedCRPUser)
         }
+    } else {
+        res.status(404).json({
+            status: "fail",
+            data: req.body
+        })
     }
-    const CRP = {
-        "name": req.body.name,
-        "email": req.body.email,
-        "password": req.body.password,
-        "DOB": req.body.DOB,
-        "gender": req.body.gender,
-        "joinedDate": req.body.joinedDate,
-        "lastUpdateDate": req.body.joinedDate,
-        "parameters":{
-            "CRP":[{
-                "value": req.body.parameterValue,
-                "date": req.body.bloodParameterDate
-            }]
-        }
-    }
-    if(req.body.parametersType === "ESR"){
-        res.json(ESR)
-    }else if(req.body.parametersType === "CRP"){
-        res.json(CRP)
+})
+
+app.post("/api/test", async (req, res) => {
+    const user = await Users.findOne({ email: req.body.email }).exec();
+
+    if (user) {
+        res.json(user)
+    } else {
+        res.status(404).json({
+            status: "fail",
+            data: req.body
+        })
     }
 })
 
 
-app.listen(5000, ()=>{console.log("server started on port 5000")})
+app.listen(5000, () => { console.log("server started on port 5000") })

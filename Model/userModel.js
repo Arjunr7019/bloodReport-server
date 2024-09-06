@@ -42,11 +42,13 @@ const usersSchema = new mongoose.Schema({
         default: undefined
     },
     parameters: {
+        date: {
+            type: Date,
+            unique: true,
+            sparse: true // Allows multiple null values if that's desired
+        },
         ESR: {
             type: Object,
-            lastUpdateDate:{
-                type: String
-            }
         },
         CRP: {
             type: Object
