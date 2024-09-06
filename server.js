@@ -163,8 +163,6 @@ app.post("/api/addNewParamaeter", async (req, res) => {
             "value": req.body.parameterValue,
             "date": req.body.bloodParameterDate
         }]
-    const mergeESR = [...newParameterValue, ...user.parameters.ESR]
-    const mergeCRP = [...newParameterValue, ...user.parameters.CRP]
 
     const today = new Date();
     const hours = today.getHours();
@@ -178,9 +176,11 @@ app.post("/api/addNewParamaeter", async (req, res) => {
 
     if (user) {
         if (req.body.parametersType === "ESR") {
+            const mergeESR = [...newParameterValue, ...user.parameters.ESR]
             const updatedESRUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { ESR: mergeESR } } }, { new: true, runValidators: true })
             res.json(updatedESRUser)
         } else if (req.body.parametersType === "CRP") {
+            const mergeCRP = [...newParameterValue, ...user.parameters.CRP]
             const updatedCRPUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { CRP: mergeCRP } } }, { new: true, runValidators: true })
             res.json(updatedCRPUser)
         }
@@ -196,7 +196,7 @@ app.post("/api/test", async (req, res) => {
     const user = await Users.findOne({ email: req.body.email }).exec();
 
     if (user) {
-        res.json(user)
+        res.json(user.parameters)
     } else {
         res.status(404).json({
             status: "fail",
