@@ -196,7 +196,12 @@ app.post("/api/LoggedInUserData", async (req, res) => {
     const user = await Users.findOne({ email: req.body.email }).exec();
 
     if (user) {
-        res.json(user)
+        res.status(200).json({
+            status: "Success",
+            data: {
+                user
+            }
+        })
     } else {
         res.status(404).json({
             status: "fail",
