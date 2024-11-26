@@ -157,7 +157,7 @@ app.post("/api/register", async (req, res) => {
 })
 
 app.post("/api/addNewParamaeter", async (req, res) => {
-    const user = await Users.findOne({ email: req.body.email }).exec();
+    const userInfo = await Users.findOne({ email: req.body.email }).exec();
     const newParameterValue = [
         {
             "value": req.body.parameterValue,
@@ -174,15 +174,27 @@ app.post("/api/addNewParamaeter", async (req, res) => {
     const currentTime = `${hours}:${minutes}:${seconds}`;
     const userLastUpdate = currentDate + " " + currentTime;
 
-    if (user) {
+    if (userInfo) {
         if (req.body.parametersType === "ESR") {
-            const mergeESR = [...newParameterValue, ...user.parameters.ESR]
-            const updatedESRUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { ESR: mergeESR } } }, { new: true, runValidators: true })
-            res.json(updatedESRUser)
+            const mergeESR = [...newParameterValue, ...userInfo.parameters.ESR]
+            const updatedESRUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { ESR: mergeESR } } }, { new: true, runValidators: true })
+            let user = await Users.findOne({ email: req.body.email }).exec();
+            res.status(200).json({
+                status: "Success",
+                data: {
+                    user
+                }
+            })
         } else if (req.body.parametersType === "CRP") {
-            const mergeCRP = [...newParameterValue, ...user.parameters.CRP]
-            const updatedCRPUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { CRP: mergeCRP } } }, { new: true, runValidators: true })
-            res.json(updatedCRPUser)
+            const mergeCRP = [...newParameterValue, ...userInfo.parameters.CRP]
+            const updatedCRPUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { CRP: mergeCRP } } }, { new: true, runValidators: true })
+            let user = await Users.findOne({ email: req.body.email }).exec();
+            res.status(200).json({
+                status: "Success",
+                data: {
+                    user
+                }
+            })
         }
     } else {
         res.status(404).json({
