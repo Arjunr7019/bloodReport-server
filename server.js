@@ -93,10 +93,6 @@ app.post("/api/register", async (req, res) => {
             "ESR": [{
                 "value": req.body.parameterValue,
                 "date": req.body.bloodParameterDate
-            }],
-            "CRP": [{
-                "value": "0",
-                "date": "0"
             }]
         }
     }
@@ -114,11 +110,20 @@ app.post("/api/register", async (req, res) => {
             "CRP": [{
                 "value": req.body.parameterValue,
                 "date": req.body.bloodParameterDate
-            }],
-            "ESR": [{
-                "value": "0",
-                "date": "0"
             }]
+        }
+    }
+    const withoutParameters = {
+        "name": req.body.name,
+        "email": req.body.email,
+        "password": req.body.password,
+        "DOB": req.body.DOB,
+        "gender": req.body.gender,
+        "joinedDate": req.body.joinedDate,
+        "lastUpdateDate": req.body.joinedDate,
+        "otpToken": "0",
+        "parameters": {
+            "date": new Date()
         }
     }
     try {
@@ -138,15 +143,15 @@ app.post("/api/register", async (req, res) => {
                     user
                 }
             })
+        }else{
+            const user = await Users.create(withoutParameters);
+            res.status(201).json({
+                status: "Success",
+                data: {
+                    user
+                }
+            })
         }
-        // const user = await Users.create(ESR);
-
-        // res.status(201).json({
-        //     status: "Success",
-        //     data: {
-        //         user
-        //     }
-        // })
     } catch (err) {
         res.status(409).json({
             status: "fail",
