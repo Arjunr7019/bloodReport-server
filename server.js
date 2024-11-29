@@ -123,19 +123,19 @@ app.post("/api/register", async (req, res) => {
     }
     try {
         if (req.body.parametersType === "ESR") {
-            const ESRuser = await Users.create(ESR);
+            const user = await Users.create(ESR);
             res.status(201).json({
                 status: "Success",
                 data: {
-                    ESRuser
+                    user
                 }
             })
         } else if (req.body.parametersType === "CRP") {
-            const CRPuser = await Users.create(CRP);
+            const user = await Users.create(CRP);
             res.status(201).json({
                 status: "Success",
                 data: {
-                    CRPuser
+                    user
                 }
             })
         }
