@@ -266,7 +266,12 @@ app.post("/api/DeleteData", async (req, res) => {
         );
     
         if (user) {
-            res.json(user)
+            res.status(200).json({
+                status: "Success",
+                data: {
+                    user
+                }
+            })
         } else {
           res.status(404).json({
             status: "No user found with the given email.",
