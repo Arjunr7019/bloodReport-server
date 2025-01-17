@@ -205,6 +205,34 @@ app.post("/api/LoggedInUserData", async (req, res) => {
     }
 })
 
+app.post("/api/DeleteData", async (req, res) => {
+    try {
+        const update = {};
+        const email = req.body.email
+        update[`parameters.${req.body.type}`] = { value: req.body.value, date: req.body.date };
+    
+        const user = await Users.findOneAndUpdate(
+          { email }, // Find the user by email
+          { $pull: update }, // Remove the specified value from the array
+          { new: true } // Return the updated document
+        );
+    
+        if (user) {
+            res.json(user)
+        } else {
+          res.status(404).json({
+            status: "No user found with the given email.",
+            data: req.body
+        })
+        }
+      } catch (err) {
+        res.status(404).json({
+            status: "Error updating user",
+            data: err
+        })
+      }
+})
+
 app.post("/api/test", async (req, res) => {
     const user = await Users.findOne({ email: req.body.email }).exec();
 
