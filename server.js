@@ -61,16 +61,16 @@ app.post("/api/mail", async (req, res) => {
 })
 
 app.post("/api/login", async (req, res) => {
-    const user = await Users.findOne({ email:req.body.email, password:req.body.password }).exec();
-    
-    if(user){
+    const user = await Users.findOne({ email: req.body.email, password: req.body.password }).exec();
+
+    if (user) {
         res.status(200).json({
             status: "Success",
             data: {
                 user
             }
         })
-    }else{
+    } else {
         res.status(404).json({
             status: "fail",
             data: req.body
@@ -93,10 +93,6 @@ app.post("/api/register", async (req, res) => {
             "ESR": [{
                 "value": req.body.parameterValue,
                 "date": req.body.bloodParameterDate
-            }],
-            "CRP": [{
-                "value": "0",
-                "date": "0"
             }]
         }
     }
@@ -114,39 +110,48 @@ app.post("/api/register", async (req, res) => {
             "CRP": [{
                 "value": req.body.parameterValue,
                 "date": req.body.bloodParameterDate
-            }],
-            "ESR": [{
-                "value": "0",
-                "date": "0"
             }]
+        }
+    }
+    const withoutParameters = {
+        "name": req.body.name,
+        "email": req.body.email,
+        "password": req.body.password,
+        "DOB": req.body.DOB,
+        "gender": req.body.gender,
+        "joinedDate": req.body.joinedDate,
+        "lastUpdateDate": req.body.joinedDate,
+        "otpToken": "0",
+        "parameters": {
+            "date": new Date()
         }
     }
     try {
         if (req.body.parametersType === "ESR") {
-            const ESRuser = await Users.create(ESR);
+            const user = await Users.create(ESR);
             res.status(201).json({
                 status: "Success",
                 data: {
-                    ESRuser
+                    user
                 }
             })
         } else if (req.body.parametersType === "CRP") {
-            const CRPuser = await Users.create(CRP);
+            const user = await Users.create(CRP);
             res.status(201).json({
                 status: "Success",
                 data: {
-                    CRPuser
+                    user
+                }
+            })
+        }else{
+            const user = await Users.create(withoutParameters);
+            res.status(201).json({
+                status: "Success",
+                data: {
+                    user
                 }
             })
         }
-        // const user = await Users.create(ESR);
-
-        // res.status(201).json({
-        //     status: "Success",
-        //     data: {
-        //         user
-        //     }
-        // })
     } catch (err) {
         res.status(409).json({
             status: "fail",
@@ -157,7 +162,7 @@ app.post("/api/register", async (req, res) => {
 })
 
 app.post("/api/addNewParamaeter", async (req, res) => {
-    const user = await Users.findOne({ email: req.body.email }).exec();
+    const userInfo = await Users.findOne({ email: req.body.email }).exec();
     const newParameterValue = [
         {
             "value": req.body.parameterValue,
@@ -174,15 +179,53 @@ app.post("/api/addNewParamaeter", async (req, res) => {
     const currentTime = `${hours}:${minutes}:${seconds}`;
     const userLastUpdate = currentDate + " " + currentTime;
 
-    if (user) {
+    if (userInfo) {
         if (req.body.parametersType === "ESR") {
-            const mergeESR = [...newParameterValue, ...user.parameters.ESR]
-            const updatedESRUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { ESR: mergeESR } } }, { new: true, runValidators: true })
-            res.json(updatedESRUser)
+            const findingParameter = await Users.findOne({ email: req.body.email }).exec();
+            if(findingParameter.parameters.ESR){
+                const mergeESR = [...newParameterValue, ...userInfo.parameters.ESR]
+                const updatedESRUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate },$addToSet:{ [`parameters.ESR`]: {"value": req.body.parameterValue, "date": req.body.bloodParameterDate}} }, { new: true, runValidators: true })
+                let user = await Users.findOne({ email: req.body.email }).exec();
+                res.status(200).json({
+                    status: "Success",
+                    data: {
+                        user
+                    }
+                })
+            }else{
+                const updatedESRUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate,[`parameters.ESR`]: newParameterValue } }, { new: true, runValidators: true })
+                let user = await Users.findOne({ email: req.body.email }).exec();
+                res.status(200).json({
+                    status: "Success",
+                    data: {
+                        user
+                    }
+                })
+            }
         } else if (req.body.parametersType === "CRP") {
-            const mergeCRP = [...newParameterValue, ...user.parameters.CRP]
-            const updatedCRPUser = await Users.findByIdAndUpdate(user._id, { $set: { lastUpdateDate:userLastUpdate, parameters: { CRP: mergeCRP } } }, { new: true, runValidators: true })
-            res.json(updatedCRPUser)
+            const findingParameter = await Users.findOne({ email: req.body.email }).exec();
+            if (findingParameter.parameters.CRP) {
+                // const mergeCRP = [...newParameterValue, ...userInfo.parameters.CRP]
+                const updatedCRPUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate },$addToSet:{ [`parameters.CRP`]: {"value": req.body.parameterValue, "date": req.body.bloodParameterDate}} }, { new: true, runValidators: true })
+                console.log(updatedCRPUser)
+                let user = await Users.findOne({ email: req.body.email }).exec();
+                res.status(200).json({
+                    status: "Success",
+                    data: {
+                        user
+                    }
+                })
+            } else {
+                const updatedCRPUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate,[`parameters.CRP`]: newParameterValue } }, { new: true, runValidators: true })
+                // res.json("parameter not found")
+                let user = await Users.findOne({ email: req.body.email }).exec();
+                res.status(200).json({
+                    status: "Success",
+                    data: {
+                        user
+                    }
+                })
+            }
         }
     } else {
         res.status(404).json({
@@ -196,7 +239,12 @@ app.post("/api/LoggedInUserData", async (req, res) => {
     const user = await Users.findOne({ email: req.body.email }).exec();
 
     if (user) {
-        res.json(user)
+        res.status(200).json({
+            status: "Success",
+            data: {
+                user
+            }
+        })
     } else {
         res.status(404).json({
             status: "fail",
