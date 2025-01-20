@@ -61,7 +61,7 @@ app.post("/api/mail", async (req, res) => {
 })
 
 app.post("/api/login", async (req, res) => {
-    const user = await Users.findOne({ email: req.body.email, password: req.body.password }).exec();
+    const user = await Users.findOne({ email: req.body.email, password: req.body.password }).select("-password -_id -otpToken");
 
     if (user) {
         res.status(200).json({
@@ -128,7 +128,7 @@ app.post("/api/register", async (req, res) => {
     }
     try {
         if (req.body.parametersType === "ESR") {
-            const user = await Users.create(ESR);
+            const user = await Users.create(ESR).select("-password -_id -otpToken");
             res.status(201).json({
                 status: "Success",
                 data: {
@@ -136,7 +136,7 @@ app.post("/api/register", async (req, res) => {
                 }
             })
         } else if (req.body.parametersType === "CRP") {
-            const user = await Users.create(CRP);
+            const user = await Users.create(CRP).select("-password -_id -otpToken");
             res.status(201).json({
                 status: "Success",
                 data: {
@@ -185,7 +185,7 @@ app.post("/api/addNewParamaeter", async (req, res) => {
             if(findingParameter.parameters.ESR){
                 const mergeESR = [...newParameterValue, ...userInfo.parameters.ESR]
                 const updatedESRUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate },$addToSet:{ [`parameters.ESR`]: {"value": req.body.parameterValue, "date": req.body.bloodParameterDate}} }, { new: true, runValidators: true })
-                let user = await Users.findOne({ email: req.body.email }).exec();
+                let user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
                 res.status(200).json({
                     status: "Success",
                     data: {
@@ -194,7 +194,7 @@ app.post("/api/addNewParamaeter", async (req, res) => {
                 })
             }else{
                 const updatedESRUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate,[`parameters.ESR`]: newParameterValue } }, { new: true, runValidators: true })
-                let user = await Users.findOne({ email: req.body.email }).exec();
+                let user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
                 res.status(200).json({
                     status: "Success",
                     data: {
@@ -208,7 +208,7 @@ app.post("/api/addNewParamaeter", async (req, res) => {
                 // const mergeCRP = [...newParameterValue, ...userInfo.parameters.CRP]
                 const updatedCRPUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate },$addToSet:{ [`parameters.CRP`]: {"value": req.body.parameterValue, "date": req.body.bloodParameterDate}} }, { new: true, runValidators: true })
                 console.log(updatedCRPUser)
-                let user = await Users.findOne({ email: req.body.email }).exec();
+                let user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
                 res.status(200).json({
                     status: "Success",
                     data: {
@@ -218,7 +218,7 @@ app.post("/api/addNewParamaeter", async (req, res) => {
             } else {
                 const updatedCRPUser = await Users.findByIdAndUpdate(userInfo._id, { $set: { lastUpdateDate: userLastUpdate,[`parameters.CRP`]: newParameterValue } }, { new: true, runValidators: true })
                 // res.json("parameter not found")
-                let user = await Users.findOne({ email: req.body.email }).exec();
+                let user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
                 res.status(200).json({
                     status: "Success",
                     data: {
@@ -236,7 +236,7 @@ app.post("/api/addNewParamaeter", async (req, res) => {
 })
 
 app.post("/api/LoggedInUserData", async (req, res) => {
-    const user = await Users.findOne({ email: req.body.email }).exec();
+    const user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
 
     if (user) {
         res.status(200).json({
@@ -263,7 +263,7 @@ app.post("/api/DeleteData", async (req, res) => {
           { email }, // Find the user by email
           { $pull: update }, // Remove the specified value from the array
           { new: true } // Return the updated document
-        );
+        ).select("-password -_id -otpToken");
     
         if (user) {
             res.status(200).json({
@@ -287,10 +287,15 @@ app.post("/api/DeleteData", async (req, res) => {
 })
 
 app.post("/api/test", async (req, res) => {
-    const user = await Users.findOne({ email: req.body.email }).exec();
+    const user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
 
     if (user) {
-        res.json(user)
+        res.status(200).json({
+            status: "Success",
+            data: {
+                user
+            }
+        })
     } else {
         res.status(404).json({
             status: "fail",
