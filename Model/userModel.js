@@ -48,9 +48,15 @@ const usersSchema = new mongoose.Schema({
             sparse: true // Allows multiple null values if that's desired
         },
         ESR: {
-            type: Object,
+            type: Object
         },
         CRP: {
+            type: Object
+        },
+        BP:{
+            type: Object
+        },
+        Glc:{
             type: Object
         }
     }
