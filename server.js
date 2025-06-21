@@ -6,7 +6,8 @@ const jsonErrors = require('express-json-errors');
 const cors = require('cors');
 const nodemailer = require("nodemailer");
 const userRoute = require("./Routes/userRoute");
-const parameterDataRoute = require("./Routes/parameterDataRoute")
+const parameterDataRoute = require("./Routes/parameterDataRoute");
+const forgotPasswordRoute = require("./Routes/forgotPasswordRoute")
 
 const mongoose = require('mongoose');
 const Users = require('./Model/userModel');
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(cors());
 app.use("/api", userRoute);
 app.use("/api", parameterDataRoute);
+app.use("/api/forgotPassword", forgotPasswordRoute);
 
 mongoose.connect(process.env.CON_STR, {
     useNewUrlParser: true
