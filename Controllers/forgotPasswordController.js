@@ -9,42 +9,48 @@ const generateOtp = () => {
 const SendOtp = async (req, res) => {
     const email = req.params.email;
 
-    await forgotPassword.deleteMany({ email });
+    const user = await userModel.findOne({ email: email }).select("-password -_id -otpToken")
 
-    const otp = generateOtp();
+    if (user) {
+        await forgotPassword.deleteMany({ email });
 
-    const newOtp = new forgotPassword({ email, otp });
-    await newOtp.save();
+        const otp = generateOtp();
 
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // Use `true` for port 465, `false` for all other ports
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+        const newOtp = new forgotPassword({ email, otp });
+        await newOtp.save();
 
-    const info = await transporter.sendMail({
-        from: {
-            name: "BLOOD REPORT Suport Team",
-            address: process.env.EMAIL_USER
-        },
-        to: email, // list of receivers
-        subject: "Password Reset OTP for Your Account", // Subject line
-        text: "", // plain text body
-        html: `Dear user,<br/><br/>
-            We have received a request to reset the password for your account. To ensure the security of your account, please use the following One-Time Password (OTP) to complete the password reset process:<br/><br/>
-            OTP: ${otp} <br/><br/>
-            Please note that this OTP is valid for a limited time period only(5 mins). If you did not request this password reset, please disregard this email.<br/><br/>
-            Thank you for your attention to this matter.<br/><br/>
-            Best regards,<br/>
-            BLOOD REPORT Suport Team`
-    });
-    console.log("Message sent:", info.messageId);
-    res.status(200).json("OTP Send Successfully");
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // Use `true` for port 465, `false` for all other ports
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        const info = await transporter.sendMail({
+            from: {
+                name: "BLOOD REPORT Suport Team",
+                address: process.env.EMAIL_USER
+            },
+            to: email, // list of receivers
+            subject: "Password Reset OTP for Your Account", // Subject line
+            text: "", // plain text body
+            html: `Dear user,<br/><br/>
+                We have received a request to reset the password for your account. To ensure the security of your account, please use the following One-Time Password (OTP) to complete the password reset process:<br/><br/>
+                OTP: ${otp} <br/><br/>
+                Please note that this OTP is valid for a limited time period only(5 mins). If you did not request this password reset, please disregard this email.<br/><br/>
+                Thank you for your attention to this matter.<br/><br/>
+                Best regards,<br/>
+                BLOOD REPORT Suport Team`
+        });
+        console.log("Message sent:", info.messageId);
+        res.status(200).json("OTP Send Successfully");
+    }else{
+        res.status(400).json("User not Found. Check Your Email and try again later");
+    }
 }
 
 module.exports = { SendOtp }
