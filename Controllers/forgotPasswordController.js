@@ -53,4 +53,23 @@ const SendOtp = async (req, res) => {
     }
 }
 
-module.exports = { SendOtp }
+const VerifyOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+        const userRecord = await forgotPassword.findOne({ email });
+
+        if (!userRecord) return res.status(404).json({ message: "otp expired! better luck next time." });
+
+        if (userRecord.otp === otp) {
+            res.status(200).json("otp is valid");
+        } else {
+            res.status(400).json("otp is not valid");
+        }
+    } catch (err) {
+        console.error("Error in VerifyAndUpdateNewPassword:", err);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+module.exports = { SendOtp , VerifyOtp }
