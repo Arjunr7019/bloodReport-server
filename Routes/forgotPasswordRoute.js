@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get("/:email", SendOtp);
 router.post("/verifyOtp", VerifyOtp);
-// router.post("/updateNewPassword", UpdateNewPassword);
+router.post("/updateNewPassword", UpdateNewPassword);
 
 module.exports = router;

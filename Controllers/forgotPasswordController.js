@@ -72,4 +72,32 @@ const VerifyOtp = async (req, res) => {
     }
 }
 
-module.exports = { SendOtp , VerifyOtp }
+const UpdateNewPassword = async (req, res) => {
+    const { email, password } = req.body;
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "user not fount check your email and try again later" });
+
+    if (!validator.isStrongPassword(password)) return res.status(400).json("Not strong and valid password");
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const updatedUser = await userModel.findOneAndUpdate(
+            { email: email },
+            { $set: { password: hashedPassword } },
+            { new: true }
+        );
+
+        if (!updatedUser) return res.status(400).json("Error updating password");
+
+        res.status(200).json("Password updated successfully.");
+    } catch (err) {
+        console.error('Error updating password:', err);
+        res.status(400).json('Error updating password:', err);
+    }
+}
+
+module.exports = { SendOtp , VerifyOtp , UpdateNewPassword }
