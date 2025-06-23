@@ -79,15 +79,10 @@ const UpdateNewPassword = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "user not fount check your email and try again later" });
 
-    if (!validator.isStrongPassword(password)) return res.status(400).json("Not strong and valid password");
-
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
         const updatedUser = await userModel.findOneAndUpdate(
             { email: email },
-            { $set: { password: hashedPassword } },
+            { $set: { password: password } },
             { new: true }
         );
 
