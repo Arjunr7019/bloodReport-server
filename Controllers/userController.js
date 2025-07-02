@@ -118,4 +118,32 @@ const loggedInUserData = async (req , res)=>{
     }
 }
 
-module.exports = { registerUser, loginUser, loggedInUserData }
+const updateUserDetails = async(req, res)=>{
+    const { email,name,DOB,gender } = req.body;
+
+    let user = await Users.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "user not fount check your email and try again later" });
+
+    try {
+        const fieldsToUpdate = {};
+        if (name) fieldsToUpdate.name = name;
+        if (DOB) fieldsToUpdate.DOB = DOB;
+        if (gender) fieldsToUpdate.gender = gender;
+
+        const updatedUser = await Users.findOneAndUpdate(
+            { email: email },
+            { $set: fieldsToUpdate },
+            { new: true }
+        );
+
+        if (!updatedUser) return res.status(400).json("Error updating user details");
+
+        res.status(200).json("details updated successfully.");
+    } catch (err) {
+        console.error('Error updating user details:', err);
+        res.status(400).json('Error updating details:', err);
+    }
+}
+
+module.exports = { registerUser, loginUser, loggedInUserData, updateUserDetails }
