@@ -1,6 +1,6 @@
 const Users = require("../Model/userModel");
 
-const loginUser = async (req , res)=>{
+const loginUser = async (req, res) => {
     const user = await Users.findOne({ email: req.body.email, password: req.body.password }).select("-password -_id -otpToken");
 
     if (user) {
@@ -18,7 +18,7 @@ const loginUser = async (req , res)=>{
     }
 }
 
-const registerUser = async (req , res)=>{
+const registerUser = async (req, res) => {
     const ESR = {
         "name": req.body.name,
         "email": req.body.email,
@@ -100,7 +100,7 @@ const registerUser = async (req , res)=>{
     }
 }
 
-const loggedInUserData = async (req , res)=>{
+const loggedInUserData = async (req, res) => {
     const user = await Users.findOne({ email: req.body.email }).select("-password -_id -otpToken");
 
     if (user) {
@@ -118,8 +118,8 @@ const loggedInUserData = async (req , res)=>{
     }
 }
 
-const updateUserDetails = async(req, res)=>{
-    const { email,name,DOB,gender } = req.body;
+const updateUserDetails = async (req, res) => {
+    const { email, name, DOB, gender } = req.body;
 
     let user = await Users.findOne({ email });
 
@@ -135,11 +135,16 @@ const updateUserDetails = async(req, res)=>{
             { email: email },
             { $set: fieldsToUpdate },
             { new: true }
-        );
+        ).select("-password -_id -otpToken");
 
         if (!updatedUser) return res.status(400).json("Error updating user details");
 
-        res.status(200).json("details updated successfully.");
+        res.status(200).json(
+            {
+                message: "details updated successfully.",
+                user: updatedUser
+            }
+        );
     } catch (err) {
         console.error('Error updating user details:', err);
         res.status(400).json('Error updating details:', err);
