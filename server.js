@@ -9,6 +9,7 @@ const userRoute = require("./Routes/userRoute");
 const parameterDataRoute = require("./Routes/parameterDataRoute");
 const forgotPasswordRoute = require("./Routes/forgotPasswordRoute")
 const rateLimit = require('express-rate-limit');
+const monitorLogs = require('./LogsController/logs')
 
 const mongoose = require('mongoose');
 const Users = require('./Model/userModel');
@@ -20,6 +21,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+app.use(morgan(monitorLogs));
 app.use(express.json());
 app.use(cors());
 app.use("/api", userRoute);
