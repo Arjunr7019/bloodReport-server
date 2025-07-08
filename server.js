@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const jsonErrors = require('express-json-errors');
 const cors = require('cors');
-const nodemailer = require("nodemailer");
+const morgan = require('morgan');
 const userRoute = require("./Routes/userRoute");
 const parameterDataRoute = require("./Routes/parameterDataRoute");
 const forgotPasswordRoute = require("./Routes/forgotPasswordRoute")

@@ -19,6 +19,7 @@
     "express-json-errors": "^1.0.5",
     "express-rate-limit": "^7.5.1",
     "mongoose": "^8.4.1",
+    "morgan": "^1.10.0",
     "nodemailer": "^6.9.13",
     "validator": "^13.15.15"
   },
