@@ -8,7 +8,19 @@ const logSchema = new mongoose.Schema({
     url: String,
     status: Number,
     responseTime: Number,
-    timestamp: { type: Date, default: Date.now }
+    timestamp: {
+        type: String,
+        default: () =>
+            new Date().toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true,
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            })
+    }
 });
 
 const Log = mongoose.model('Blood-report-Log', logSchema);
