@@ -15,8 +15,8 @@ const mongoose = require('mongoose');
 const Users = require('./Model/userModel');
 
 const limiter = rateLimit({
-  windowMs: 60 * 1000, // 15 minutes
-  max: 7, // Limit each IP to 100 requests per windowMs
+  windowMs: 60 * 1000, // 1 minutes
+  max: 20, // Limit each IP to 100 requests per windowMs
   message: "Too many requests from this IP, please try again after 15 minutes."
 });
 
